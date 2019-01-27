@@ -7,6 +7,8 @@ export const db = knex({
     host : 'localhost',
     user : 'root',
     password : '',
-    database : 'test'
-    }
+    database : 'dev'
+    },
+
+    pool: { min: 0, max: 7 }
 })

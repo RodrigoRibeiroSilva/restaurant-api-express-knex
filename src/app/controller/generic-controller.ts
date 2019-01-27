@@ -13,6 +13,14 @@ export abstract class GenericController<E extends IModel> {
         this.selectableProps = model.props
     }
 
+    isValidObject(reqProps: string[]) : boolean{
+        let isValid = false
+        if(reqProps.length === this.selectableProps.length - 1){
+            return true
+        }
+        return isValid
+    }
+
     findAll = (req: Request, res: Response, next: NextFunction) => {
         db.select(this.selectableProps).from(this.tableName)
           .then(results => {
@@ -32,24 +40,36 @@ export abstract class GenericController<E extends IModel> {
     }
 
     save = (req: Request, res: Response, next: NextFunction) => {
-       db.insert(req.body)
-         .into('products')
-         .then(result => {
-             res.send(result)
-             next()
-         })
-         .catch(next)
+
+        let isValid = this.isValidObject(Object.keys(req.body))
+
+        if(isValid){
+            db(this.tableName)
+            .returning(this.selectableProps)
+            .insert(req.body)
+            .then(result => {
+                res.send( {message: `Added successfully - Id: ${result}`})
+                next()
+            })
+            .catch(next)
+        }else{
+            next(new Error('Invalid Document'))
+        }
+        
     }
 
     update = (req: Request, res: Response, next: NextFunction) => {
-        let modelId = req.params.id
-        let updateProps = req.body
-        console.log(updateProps)
-        db.update(modelId, updateProps)
-          .then(() => {
+
+        db(this.tableName).where({id: req.params.id}).update(req.body)
+          .then(results => {
+              if(results){
                 res.send({
-                message: 'Successfully updated'})
-                next()
+                    message: 'Updated Successfully'})
+                    next()
+              }else{
+                throw new Error('Document not found')
+              }
+               return next()
            })
           .catch(next)
     }
@@ -58,12 +78,17 @@ export abstract class GenericController<E extends IModel> {
         db.del()
           .from(this.tableName)        
           .where({ id: req.params.id })
-          .then(() => {
-                res.send( {message: 'Successfully deleted'})
-                next()
-                })
-          .catch(next)
-                        
+          .then(result => {
+                if(result){
+                    res.send( {message: 'Deleted successfully'})
+                    
+                }else{
+                    throw new Error('Document not found')
+                }
+                return next()
+            })
+                
+          .catch(next)                
     }
 
 }

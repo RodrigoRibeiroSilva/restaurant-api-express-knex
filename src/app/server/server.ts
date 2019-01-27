@@ -2,6 +2,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 
 import { environment } from '../common/environment'
+import { restaurantRauter } from '../router/restaurants-rauter'
 
 
 export class Server {
@@ -12,8 +13,10 @@ export class Server {
     constructor() {
         this.app = express();
         this.port = environment.server.port
-
         this.config();
+        
+        restaurantRauter.applyRoutes(this.app)
+        
     }
 
     initServer(){
