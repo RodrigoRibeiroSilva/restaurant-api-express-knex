@@ -2,8 +2,8 @@ module.exports = {
 
   development: {
 
-    migrations: { tableName: 'knex_migrations' },
-    seeds: { tableName: './seeds' },
+    migrations: { directory: './src/database/migrations'},
+    seeds: { directory: './src/database/seeds'},
 
     client: 'mysql',
     connection: {
